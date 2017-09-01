@@ -26,6 +26,12 @@ type litecoinNetParams struct {
 	rpcPort string
 }
 
+// bitcoinMainNetParams contains parameters specific to the Bitcoin mainnet.
+var bitcoinMainNetParams = bitcoinNetParams{
+	Params:  &bitcoinCfg.MainNetParams,
+	rpcPort: "8334",
+}
+
 // bitcoinTestNetParams contains parameters specific to the 3rd version of the
 // test network.
 var bitcoinTestNetParams = bitcoinNetParams{
@@ -40,55 +46,61 @@ var bitcoinSimNetParams = bitcoinNetParams{
 	rpcPort: "18556",
 }
 
-// liteTestNetParams contains parameters specific to the 4th version of the
-// test network.
-var liteTestNetParams = litecoinNetParams{
-	Params:  &litecoinCfg.TestNet4Params,
-	rpcPort: "19334",
-}
-
 // regTestNetParams contains parameters specific to a local regtest network.
 var regTestNetParams = bitcoinNetParams{
 	Params:  &bitcoinCfg.RegressionNetParams,
 	rpcPort: "18334",
 }
 
+// litecoinMainNetParams contains parameters specific to the Litecoin mainnet.
+var litecoinMainNetParams = litecoinNetParams{
+	Params:  &litecoinCfg.MainNetParams,
+	rpcPort: "9334",
+}
+
+// litecoinTestNetParams contains parameters specific to the 4th version of the
+// test network.
+var litecoinTestNetParams = litecoinNetParams{
+	Params:  &litecoinCfg.TestNet4Params,
+	rpcPort: "19334",
+}
+
 // applyLitecoinParams applies the relevant chain configuration parameters that
 // differ for litecoin to the chain parameters typed for btcsuite derivation.
 // This function is used in place of using something like interface{} to
 // abstract over _which_ chain (or fork) the parameters are for.
-func applyLitecoinParams(params *bitcoinNetParams) {
-	params.Name = liteTestNetParams.Name
-	params.Net = wire.BitcoinNet(liteTestNetParams.Net)
-	params.DefaultPort = liteTestNetParams.DefaultPort
-	params.CoinbaseMaturity = liteTestNetParams.CoinbaseMaturity
+func applyLitecoinParams(params *bitcoinNetParams, paramsCopy *litecoinNetParams) {
+	params.Name = paramsCopy.Name
+	params.Net = wire.BitcoinNet(paramsCopy.Net)
+	params.DefaultPort = paramsCopy.DefaultPort
+	params.CoinbaseMaturity = paramsCopy.CoinbaseMaturity
 
-	copy(params.GenesisHash[:], liteTestNetParams.GenesisHash[:])
+	copy(params.GenesisHash[:], paramsCopy.GenesisHash[:])
 
 	// Address encoding magics
-	params.PubKeyHashAddrID = liteTestNetParams.PubKeyHashAddrID
-	params.ScriptHashAddrID = liteTestNetParams.ScriptHashAddrID
-	params.PrivateKeyID = liteTestNetParams.PrivateKeyID
-	params.WitnessPubKeyHashAddrID = liteTestNetParams.WitnessPubKeyHashAddrID
-	params.WitnessScriptHashAddrID = liteTestNetParams.WitnessScriptHashAddrID
-	params.Bech32HRPSegwit = liteTestNetParams.Bech32HRPSegwit
+	params.PubKeyHashAddrID = paramsCopy.PubKeyHashAddrID
+	params.ScriptHashAddrID = paramsCopy.ScriptHashAddrID
+	params.PrivateKeyID = paramsCopy.PrivateKeyID
+	params.WitnessPubKeyHashAddrID = paramsCopy.WitnessPubKeyHashAddrID
+	params.WitnessScriptHashAddrID = paramsCopy.WitnessScriptHashAddrID
+	params.Bech32HRPSegwit = paramsCopy.Bech32HRPSegwit
 
-	copy(params.HDPrivateKeyID[:], liteTestNetParams.HDPrivateKeyID[:])
-	copy(params.HDPublicKeyID[:], liteTestNetParams.HDPublicKeyID[:])
+	copy(params.HDPrivateKeyID[:], paramsCopy.HDPrivateKeyID[:])
+	copy(params.HDPublicKeyID[:], paramsCopy.HDPublicKeyID[:])
 
-	params.HDCoinType = liteTestNetParams.HDCoinType
+	params.HDCoinType = paramsCopy.HDCoinType
 
-	checkPoints := make([]chaincfg.Checkpoint, len(liteTestNetParams.Checkpoints))
-	for i := 0; i < len(liteTestNetParams.Checkpoints); i++ {
+	checkPoints := make([]chaincfg.Checkpoint, len(paramsCopy.Checkpoints))
+	for i := 0; i < len(paramsCopy.Checkpoints); i++ {
 		var chainHash chainhash.Hash
-		copy(chainHash[:], liteTestNetParams.Checkpoints[i].Hash[:])
+		copy(chainHash[:], paramsCopy.Checkpoints[i].Hash[:])
 
 		checkPoints[i] = chaincfg.Checkpoint{
-			Height: liteTestNetParams.Checkpoints[i].Height,
+			Height: paramsCopy.Checkpoints[i].Height,
 			Hash:   &chainHash,
 		}
 	}
 	params.Checkpoints = checkPoints
 
-	params.rpcPort = liteTestNetParams.rpcPort
+	params.rpcPort = paramsCopy.rpcPort
 }
