@@ -106,13 +106,14 @@ func newChainControlFromConfig(cfg *config, chanDB *channeldb.DB) (*chainControl
 	// Set the RPC config from the "home" chain. Multi-chain isn't yet
 	// active, so we'll restrict usage to a particular chain for now.
 	homeChainConfig := cfg.Bitcoin
+	estimator := lnwallet.StaticFeeEstimator{FeeRate: 50}
 	if registeredChains.PrimaryChain() == litecoinChain {
 		homeChainConfig = cfg.Litecoin
+		estimator = lnwallet.StaticFeeEstimator{FeeRate: 100}
 	}
 	ltndLog.Infof("Primary chain is set to: %v",
 		registeredChains.PrimaryChain())
 
-	estimator := lnwallet.StaticFeeEstimator{FeeRate: 50}
 	walletConfig := &btcwallet.Config{
 		PrivatePass:  []byte("hello"),
 		DataDir:      homeChainConfig.ChainDir,
